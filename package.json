@@ -1,0 +1,10 @@
+{
+  "name": "discord_test",
+  "version": "1.0.0",
+  "description": "My First Discord Bot - Hopefully Spell Checking",
+  "main": "bot.js",
+  "dependencies": {
+    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+    "winston": "^3.2.1"
+  }
+}
