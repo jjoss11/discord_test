@@ -14,7 +14,9 @@ let bot = new Discord.Client({  // Initialize Discord Bot
     token: auth.token,
     autorun: true
 });
+
 let dictionary_file = fs.readFileSync("./words.txt").toString('utf-8');
+
 let dictionary = dictionary_file.split('\n');
 function in_dict(word) {
     for (let i = 0; i < dictionary.length; i++) {
@@ -59,8 +61,6 @@ bot.on('ready', function (evt) {
 bot.on('message', function (user, userID, channelID, message, evt) {
 // Our bot needs to know if it will execute a command
 // It will listen for messages that will start with `!`
-
-
 
     if (message.substring(0, 1) === '!') {
         let args = message.substring(1).split(' ');
