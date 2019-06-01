@@ -2,10 +2,29 @@ const Discord = require('discord.io');
 const logger = require('winston');
 const auth = require('./auth.json');
 const fs = require('fs');
+const http = require("https");
+
+//data for OED API
+const app_id = "a910ee48";
+const app_key = "ae1a749bad44b56962cdb068c1223fa7";
+const wordId = "ace";
+const fields = "definitions";
+const strictMatch = "false";
+
+const options = {
+    host: 'od-api.oxforddictionaries.com',
+    port: '443',
+    path: '/api/v2/entries/en-us/' + wordId + '?fields=' + fields + '&strictMatch=' + strictMatch,
+    method: "GET",
+    headers: {
+        'app_id': app_id,
+        'app_key': app_key
+    }
+};
 
 //arrays storing possible insults
-const insults_adj = ['narrow-minded', 'pig-headed', 'fatuous', 'vulgar', 'feckless',' churlish', 'vapid', 'boorish', 'domineering', 'shiftless'];
-const insults_noun = ['Cockalorum', 'Pillock', 'Ninnyhammer', 'Mumpsimus', 'Mooncalf', 'Dingbat', 'Imbecile', 'Philistine', 'troglodyte', 'dummkopf', 'vacuous slug'];
+const insults_adj = ['narrow-minded', 'pig-headed', 'fatuous', 'vulgar', 'feckless',' churlish', 'vapid', 'boorish', 'domineering', 'shiftless', 'systematically-unsound'];
+const insults_noun = ['Cockalorum', 'Pillock', 'Ninnyhammer', 'Mumpsimus', 'Mooncalf', 'Dingbat', 'Imbecile', 'Philistine', 'troglodyte', 'dummkopf', 'slug'];
 
 logger.remove(logger.transports.Console);   // Configure logger settings
 logger.add(new logger.transports.Console, {
@@ -20,7 +39,7 @@ let bot = new Discord.Client({  // Initialize Discord Bot
 
 let dictionary_file = fs.readFileSync('./words.txt').toString('utf-8');
 let dictionary = dictionary_file.split('\n');
-
+let response;
 function in_dict(word) {
     for (let i = 0; i < dictionary.length; i++) {
         if (dictionary[i].toUpperCase() === word.toUpperCase())
@@ -100,7 +119,9 @@ function check_spelling(message, channelID){
         }
     }
 }
+function get_defs(response){
 
+}
 bot.on('ready', function (evt) {
     logger.info('Connected');
     logger.info('Logged in as: ');
@@ -144,3 +165,17 @@ bot.on('message', function (user, userID, channelID, message, evt) {
     }
 
 });
+/*http.get(options, (resp) => {
+    let body = '';
+    resp.on('data', (d) => {
+        body += d;
+    });
+    resp.on('end', () => {
+        console.log(body + "\n\n--------------------------\n\n");
+        response = JSON.parse(body);
+        //console.log(response);
+        console.log(response.results[0].lexicalEntries[0].entries);
+        //console.log(response.results[0].lexicalEntries.entries.entries);
+    });
+});*/
+
