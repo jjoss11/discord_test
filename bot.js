@@ -7,11 +7,11 @@ const http = require("https");
 //data for OED API
 const app_id = "a910ee48";
 const app_key = "ae1a749bad44b56962cdb068c1223fa7";
-const wordId = "ace";
 const fields = "definitions";
 const strictMatch = "false";
+let wordId;
 
-const options = {
+let options = {
     host: 'od-api.oxforddictionaries.com',
     port: '443',
     path: '/api/v2/entries/en-us/' + wordId + '?fields=' + fields + '&strictMatch=' + strictMatch,
@@ -72,7 +72,7 @@ function dict_to_string(dict){
     }
     return string;
 }
-function remove_from_dict(words, user){
+function remove_from_dict(words){
     let response = '';
     for(let i = 0; i < words.length; i++){
         if(!in_dict(words[i])){
@@ -119,7 +119,58 @@ function check_spelling(message, channelID){
         }
     }
 }
-function get_defs(response){
+function print_defs(words, channelID){
+    for(let i = 0; i < words.length; i++)
+        get_defs(words[i], channelID);
+}
+function get_defs(word, channelID){
+    let string = '';
+    let options = {
+        host: 'od-api.oxforddictionaries.com',
+        port: '443',
+        path: '/api/v2/entries/en-us/' + word + '?fields=' + fields + '&strictMatch=' + strictMatch,
+        method: "GET",
+        headers: {
+            'app_id': app_id,
+            'app_key': app_key
+        }
+    };
+
+    http.get(options, (resp) => {
+        let body = '';
+        resp.on('data', (d) => {
+            body += d;
+        });
+
+        resp.on('end', () => {
+            let defs = [];
+            let string = '';
+            response = JSON.parse(body);
+            for(let i = 0; i < response.results.length; i++) {
+                for (let j = 0; j < response.results[i].lexicalEntries.length; j++){
+                    for (let k = 0; k < response.results[i].lexicalEntries[j]["entries"].length; k++) {
+                        for (let l = 0; l < response.results[i].lexicalEntries[j]["entries"][k].senses.length; l++) {
+                            for (let m = 0; m < response.results[i].lexicalEntries[j]["entries"][k].senses[l].definitions.length; m++) {
+                                defs[defs.length] = response.results[i].lexicalEntries[j]["entries"][k].senses[l].definitions[m];
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            string += word + ' can mean:\n';
+            for(let j = 0; j < defs.length; j++){
+                string += '\t- ' + defs[j] + '\n';
+            }
+            string += '\n';
+            bot.sendMessage({
+                to: channelID,
+                message: string
+            });
+        });
+    });
+
 
 }
 bot.on('ready', function (evt) {
@@ -152,8 +203,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'remove':
                 bot.sendMessage({
                     to: channelID,
-                    message: remove_from_dict(args, user)
+                    message: remove_from_dict(args)
                 });
+                break;
+            case 'define':
+                print_defs(args, channelID);
                 break;
         }   // Just add any case commands if you want to..
     }
@@ -165,17 +219,4 @@ bot.on('message', function (user, userID, channelID, message, evt) {
     }
 
 });
-/*http.get(options, (resp) => {
-    let body = '';
-    resp.on('data', (d) => {
-        body += d;
-    });
-    resp.on('end', () => {
-        console.log(body + "\n\n--------------------------\n\n");
-        response = JSON.parse(body);
-        //console.log(response);
-        console.log(response.results[0].lexicalEntries[0].entries);
-        //console.log(response.results[0].lexicalEntries.entries.entries);
-    });
-});*/
 
